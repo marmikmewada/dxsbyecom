@@ -80,7 +80,7 @@ exports.deleteTodo = async (req, res) => {
 // Delete many todos at once
 exports.deleteManyTodos = async (req, res) => {
   try {
-    const todoIdsToDelete = req.body.todoIds; // Assuming todoIds is an array of todo IDs sent from the frontend
+    const todoIdsToDelete = req.body.todoIds; // Assuming [todoIds] is an array of todo IDs sent from the frontend
 
     const result = await Todo.deleteMany({ _id: { $in: todoIdsToDelete } });
     if (result.deletedCount > 0) {
