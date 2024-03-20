@@ -8,6 +8,7 @@ const App = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [editingTodo, setEditingTodo] = useState(null);
+  const [editingTodoData, setEditingTodoData] = useState({ title: "", description: "" });
 
   useEffect(() => {
     const timerId = setTimeout(() => {
@@ -68,13 +69,15 @@ const App = () => {
   };
 
   const handleEditTodo = (todoId) => {
+    const todoToEdit = todos.find((todo) => todo._id === todoId);
     setEditingTodo(todoId);
+    setEditingTodoData({ title: todoToEdit.title, description: todoToEdit.description });
   };
 
   const handleSaveEdit = async (todoId) => {
-    if (title.trim() !== "" && description.trim() !== "") {
+    if (editingTodoData.title.trim() !== "" && editingTodoData.description.trim() !== "") {
       try {
-        const updatedTodo = { title, description };
+        const updatedTodo = { title: editingTodoData.title, description: editingTodoData.description };
         const response = await axios.put(
           `http://localhost:8000/api/todos/${todoId}`,
           updatedTodo
@@ -141,13 +144,14 @@ const App = () => {
               {editingTodo === todo._id ? (
                 <div>
                   <input
+                  className="text"
                     type="text"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
+                    value={editingTodoData.title}
+                    onChange={(e) => setEditingTodoData({ ...editingTodoData, title: e.target.value })}
                   />
                   <textarea
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
+                    value={editingTodoData.description}
+                    onChange={(e) => setEditingTodoData({ ...editingTodoData, description: e.target.value })}
                   />
                   <button onClick={() => handleSaveEdit(todo._id)}>Save</button>
                 </div>
