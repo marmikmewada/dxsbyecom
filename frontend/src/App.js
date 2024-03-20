@@ -4,7 +4,7 @@ import "./App.css";
 
 const App = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [todos, setTodos] = useState([]); // Ensure todos is initialized as an empty array
+  const [todos, setTodos] = useState([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
 
@@ -98,7 +98,8 @@ const App = () => {
         </div>
         {/* Todo list */}
         <div className="todo-list">
-          {todos.length > 0 ? (
+          {/* {console.log("help", todos)}   */}
+          {"1"=="1" ? (
             <div className="todo-list">
               {todos.map((todo) => (
                 <div key={todo._id} className="todo-item">
