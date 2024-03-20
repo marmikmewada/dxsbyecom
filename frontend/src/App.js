@@ -7,39 +7,34 @@ const App = () => {
   const [todos, setTodos] = useState([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [editingTodo, setEditingTodo] = useState(null);
 
   useEffect(() => {
     const timerId = setTimeout(() => {
       setCurrentDate(new Date());
-    }, 1000); // Update every one second
+    }, 1000);
 
-    return () => clearTimeout(timerId); // Cleanup on unmount
-  }, [currentDate]); // Re-run effect whenever currentDate changes
- 
+    return () => clearTimeout(timerId);
+  }, [currentDate]);
+
   useEffect(() => {
     const fetchTodos = async () => {
       try {
         const response = await axios.get("http://localhost:8000/api/todos");
-        console.log("response",response)
-        console.log("responsedata", response.data)
-        setTodos(response.data);
-        console.log("Fetched todos:", response.data);
+        setTodos(response.data.data);
       } catch (error) {
         console.error("Error fetching todos:", error);
       }
     };
 
     fetchTodos();
-  }, []); // Fetch todos only once when component mounts
-  // useEffect(() => console.log("hello",todos), [todos]);
+  }, [todos]);
 
-  // Format date as "dd/mm" (e.g., "17/04")
   const formattedDate = currentDate.toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "2-digit",
   });
 
-  // Format time as "hh:mm AM/PM" (e.g., "01:50 PM")
   const formattedTime = currentDate.toLocaleTimeString("en-US", {
     hour: "2-digit",
     minute: "2-digit",
@@ -72,6 +67,50 @@ const App = () => {
     }
   };
 
+  const handleEditTodo = (todoId) => {
+    setEditingTodo(todoId);
+  };
+
+  const handleSaveEdit = async (todoId) => {
+    if (title.trim() !== "" && description.trim() !== "") {
+      try {
+        const updatedTodo = { title, description };
+        const response = await axios.put(
+          `http://localhost:8000/api/todos/${todoId}`,
+          updatedTodo
+        );
+        const updatedTodos = todos.map((todo) =>
+          todo._id === todoId ? response.data : todo
+        );
+        setTodos(updatedTodos);
+        setEditingTodo(null);
+      } catch (error) {
+        console.error("Error updating todo:", error);
+      }
+    } else {
+      alert("Please enter title and description for the edited todo.");
+    }
+  };
+
+  const handleDeleteTodo = async (todoId) => {
+    if (window.confirm("Are you sure you want to delete this todo?")) {
+      try {
+        const response = await axios.delete(
+          `http://localhost:8000/api/todos/${todoId}`
+        );
+        if (response.status === 200) {
+          const remainingTodos = todos.filter((todo) => todo._id !== todoId);
+          setTodos(remainingTodos);
+        } else {
+          console.error("Error deleting todo:", response.statusText);
+        }
+      } catch (error) {
+        console.error("Error deleting todo:", error);
+      }
+      setEditingTodo(null);
+    }
+  };
+
   return (
     <div className="App">
       <div className="navbar-1">
@@ -96,22 +135,34 @@ const App = () => {
           ></textarea>
           <button onClick={addTodo}>Add Todo</button>
         </div>
-        {/* Todo list */}
-        <div className="todo-list">
-          {/* {console.log("help", todos)}   */}
-          {"1"=="1" ? (
-            <div className="todo-list">
-              {todos.map((todo) => (
-                <div key={todo._id} className="todo-item">
-                  {/* ... Your todo content here, using todo.title and todo.description ... */}
+        <div className="todo-list" key={todos.length}>
+          {todos.map((todo) => (
+            <div key={todo._id} className="todo-item">
+              {editingTodo === todo._id ? (
+                <div>
+                  <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                  />
+                  <textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                  />
+                  <button onClick={() => handleSaveEdit(todo._id)}>Save</button>
+                </div>
+              ) : (
+                <>
                   <h3>{todo.title}</h3>
                   <p>{todo.description}</p>
-                </div>
-              ))}
+                </>
+              )}
+              <div className="todo-actions">
+                <button onClick={() => handleEditTodo(todo._id)}>Edit</button>
+                <button onClick={() => handleDeleteTodo(todo._id)}>Delete</button>
+              </div>
             </div>
-          ) : (
-            <p>Loading todos...</p>
-          )}
+          ))}
         </div>
       </div>
     </div>
